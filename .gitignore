@@ -1,0 +1,19 @@
+*.py[co]
+
+### PyCharm ###
+.idea
+*.iws
+*.iml
+*.ipr
+*.log
+
+### Eclipse ###
+/vdjapi/.project
+/vdjapi/.pydevproject
+/vdjapi/.settings
+
+/vdjapi/manage.dev.py
+/vdjapi/vdjapi/settings/prod.py
+/vdjapi/vdjapi/settings/dev.py
+/vdjapi-logs
+
