@@ -17,3 +17,5 @@
 /vdjapi/vdjapi/settings/dev.py
 /vdjapi-logs
 
+### VS Code ###
+/vdjfed/.vscode
