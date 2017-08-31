@@ -1,6 +1,15 @@
 <template>
   <div>
-    login page
+    <h2>login page</h2>
+    <form @submit="login()">
+      <label for="username">Username</label>
+      <input type="username" id="username" v-model="username"/>
+      <br/>
+      <label for="password">&nbsp;Password</label>
+      <input type="password" id="password" v-model="password"/>
+      <br/>
+      <button type="submit">Submit</button>
+    </form>
   </div>
 </template>
 
@@ -8,19 +17,15 @@
 export default {
   data () {
     return {
-      context: 'login context',
-      data: {
-        // body is fixex variable naming in `vue-resource` do not CHANGE it!!!
-        body: {
-          username: 'admin',
-          password: 'admin'
-        }
-      },
-      error: null
+      username: 'admin',
+      password: 'admin'
     }
   },
-
   methods: {
+    login () {
+      console.info('username: ', this.username)
+      console.info('password: ', this.password)
+    }
   }
 }
 </script>

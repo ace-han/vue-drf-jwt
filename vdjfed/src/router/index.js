@@ -9,6 +9,8 @@ import BaseTemplate from '@/components/template/Base'
 import Login from '@/views/login/Login'
 import Home from '@/views/Home'
 
+import AccountRoutes from '@/views/account/routes'
+
 Vue.use(Router)
 
 export default new Router({
@@ -49,7 +51,8 @@ export default new Router({
           path: 'index',
           name: 'index',
           component: Home
-        }
+        },
+        AccountRoutes
       ]
     },
     {

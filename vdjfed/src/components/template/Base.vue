@@ -26,6 +26,14 @@ html, body
   font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif
   height: 100%
 
+ul
+  list-style-type: none
+  padding: 0
+
+li
+  display: inline-block
+  margin: 0 10px
+
 .app
   height: 100%
 
