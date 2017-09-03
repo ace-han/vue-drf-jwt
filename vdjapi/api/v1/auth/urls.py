@@ -7,11 +7,11 @@ router = routers.DefaultRouter()
 router.register('users', views.UserViewSet)
 
 urlpatterns = [
-    url(r'^', include(router.urls)),
     url(r'^token/$', views.obtain_jwt_token),
     url(r'^token/refresh/$', views.refresh_jwt_token),
     url(r'^token/verify/$', views.verify_jwt_token),
     url(r'^register/$', views.register),
-    url(r'^login/$', views.login),
-    url(r'^test/$', views.test),
+    url(r'^login/$', views.obtain_jwt_token),
+    url(r'^user/info/', views.current_user_info),
+    url(r'^', include(router.urls)),
 ]

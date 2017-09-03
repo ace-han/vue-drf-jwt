@@ -53,7 +53,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'reversion.middleware.RevisionMiddleware',
     'api.middleware.VersionSwitch',
 ]
 
@@ -278,7 +277,8 @@ AUTH_USER_MODEL = 'authx.User'
 
 JWT_AUTH = {
     #'JWT_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_payload_handler',
-    'JWT_PAYLOAD_HANDLER': 'authx.utils.jwt_payload_handler', # we should make the payload count
+    #'JWT_PAYLOAD_HANDLER': 'authx.utils.jwt_payload_handler', # we should make the payload count
+    #'JWT_RESPONSE_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_response_payload_handler'
     #'JWT_RESPONSE_PAYLOAD_HANDLER': 'authx.utils.jwt_response_payload_handler',
     
     # default stuff with comments no more doc looking up
@@ -296,12 +296,14 @@ JWT_AUTH = {
     # for usage clarification of the following two options 
     # plz refer to https://github.com/GetBlimp/django-rest-framework-jwt/issues/92#issuecomment-227763338
     # in this situation, once the user is forced to log off, you will have to login again with username/password
-    # if you want the user stay logon for a really long time(which is not good), you might as well set the JWT_EXPIRATION_DELTA long enough, but JWT_EXPIRATION_DELTA<JWT_REFRESH_EXPIRATION_DELTA for sure  
-    'JWT_EXPIRATION_DELTA': timedelta(seconds=300), # used to be seconds=300, original should be no longer than JWT_REFRESH_EXPIRATION_DELTA
+    # if you want the user stay logon for a really long time(which is not good), you might as well set the JWT_EXPIRATION_DELTA long enough, but JWT_EXPIRATION_DELTA<JWT_REFRESH_EXPIRATION_DELTA for sure
+    # for a much more friendly user experience in front end, I set it to one day
+    # however, for a real api backend I still need another endpoint to make it seconds=300  
+    'JWT_EXPIRATION_DELTA': timedelta(days=1), # used to be seconds=300, original should be no longer than JWT_REFRESH_EXPIRATION_DELTA
     # as recommended @http://stackoverflow.com/questions/26739167/jwt-json-web-token-automatic-prolongation-of-expiration?rq=1
     # a generic JWT_EXPIRATION_DELTA would be 1 hour, renew should go with every time user open the page and one hour with a setTimeout(maybe?)
     # and JWT_REFRESH_EXPIRATION_DELTA should be 1 week
     'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7), #Limit on token refresh, is a datetime.timedelta instance. 
                                                     # This is how much time after the original token that future tokens can be refreshed from.
-    'JWT_AUTH_HEADER_PREFIX': 'JWT', # that HTTP Header Authorization: Bearer xxx, Bearer part
+    'JWT_AUTH_HEADER_PREFIX': 'Bear', # that HTTP Header Authorization: Bearer xxx, Bearer part
 }

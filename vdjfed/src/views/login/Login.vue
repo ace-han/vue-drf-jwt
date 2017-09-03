@@ -14,6 +14,7 @@
 </template>
 
 <script>
+
 export default {
   data () {
     return {
@@ -23,8 +24,7 @@ export default {
   },
   methods: {
     login () {
-      console.info('username: ', this.username)
-      console.info('password: ', this.password)
+      this.$auth.login(this.username, this.password)
     }
   }
 }
