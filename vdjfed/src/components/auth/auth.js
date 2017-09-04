@@ -4,15 +4,15 @@ import TokenStore from './token'
 
 const defaultOptions = {
   // Variables
-  authType: 'bearer',
+  authType: 'Bearer',
   rolesVar: 'groups',
   tokenName: 'token',
   tokenStoreType: 'localStorage',
   httpDataField: 'data',
   // Objects
   authRedirect: {path: '/login'},
+  notAuthRedirect: {path: '/401'},
   forbiddenRedirect: {path: '/403'},
-  notFoundRedirect: {path: '/404'},
   registerData: {
     url: '/api/v1/auth/register/',
     method: 'POST',
@@ -37,8 +37,8 @@ const defaultOptions = {
     enabled: true
   },
   refreshData: {
-    url: '/api/v1/auth/refresh/',
-    method: 'GET',
+    url: '/api/v1/auth/token/refresh/',
+    method: 'POST',
     enabled: true,
     interval: 5 // minutes
   }
@@ -63,43 +63,64 @@ export default class Auth {
       data () {
         return {
           data: {},
-          loaded: false,
           authenticated: false,
-          refreshing: false
+          refreshing: false,
+          fetching: false
         }
       }
     })
 
-    vueRouter.beforeEach(this.beforeEachRouteHandler.bind(this))
-
-    this[http].interceptors.request.use(this.httpRequestInterceptor.bind(this))
-    this[http].interceptors.response.use(this.httpResponseInterceptor.bind(this))
+    this.initBeforeEachRouteHandler()
+    this.initRequestInterceptor()
+    this.initResponseInterceptor()
 
     this.refreshTokenQuietly()
   }
 
+  static checkAuth (one, two) {
+    if (Object.prototype.toString.call(one) === '[object Object]' && Object.prototype.toString.call(two) === '[object Object]') {
+      for (let key in one) {
+        if (this.checkAuth(one[key], two[key])) {
+          return true
+        }
+      }
+      return false
+    }
+    one = utils.toArray(one)
+    two = utils.toArray(two)
+
+    if (!one || !two || one.constructor !== Array || two.constructor !== Array) {
+      return false
+    }
+    for (let i = 0, ii = one.length; i < ii; i++) {
+      if (two.indexOf(one[i]) >= 0) {
+        return true
+      }
+    }
+    return false
+  }
+
   ready () {
-    return this[watched].loaded
+    return !(this[watched].fetching || utils.isEmptyObject(this.user()))
   }
 
   refreshTokenQuietly () {
-    if (this.options.refreshData.enable && this[tokenStore].get()) {
+    if (this.options.refreshData.enabled && this[tokenStore].get()) {
       this[watched].refreshing = true
       this.doRefreshToken()
         .then(() => {
           this[watched].authenticated = true
+          this.fetchUserInfo()
           this.refreshToken()
         }).catch(() => {
           this[watched].authenticated = false
         }).then(() => {
-          this[watched].loaded = true
-          this[watched].refreshing = false
         })
     }
   }
 
   refreshToken () {
-    if (this.options.refreshData.enable) {
+    if (this.options.refreshData.enabled) {
       this[pollingRef] = setTimeout(() => {
         this.doRreshToken()
         this.refreshToken()
@@ -158,9 +179,9 @@ export default class Auth {
         resolve(response)
       }).catch((error) => {
         this[watched].authenticated = false
+        this[tokenStore].remove()
         reject(error)
       }).then(() => {
-        this[watched].loaded = true
       })
     })
   }
@@ -168,34 +189,59 @@ export default class Auth {
   loginSuccessHandler (data) {
     // if any next go to next,
     // otherwise go to this.options.loginData.redirect
-    let next = this[router].currentRoute.query.next || data.redirect
-    if (next) {
-      this[router].push(next)
-    } else {
-      this[router].push(this.options.loginData.redirect)
-    }
+    this.fetchUserInfo().then(() => {
+      let next = this[router].currentRoute.query.next || data.redirect
+      if (next) {
+        this[router].push(next)
+      } else {
+        this[router].push(this.options.loginData.redirect)
+      }
+    })
   }
 
   user () {
+    // sync version
     return this[watched].data
   }
 
-  fetchUser () {
+  fetchUserInfo () {
+    // promise version
+    if (!this.options.fetchUserData.doEveryRoute) {
+      if (this[watched].fetching) {
+        return new Promise((resolve) => {
+          let loopFetching = () => {
+            setTimeout(() => {
+              if (this[watched].fetching) {
+                loopFetching()
+              } else {
+                resolve(this.user())
+              }
+            }, 500)
+          }
+          loopFetching()
+        })
+      }
+      let userData = this.user()
+      if (!(utils.isEmptyObject(userData) || this.options.fetchUserData.doEveryRoute)) {
+        return Promise.resolve(this.user())
+      }
+    }
+    this[watched].fetching = true
     return new Promise((resolve, reject) => {
       this[http]({
         method: this.options.fetchUserData.method,
         url: this.options.fetchUserData.url
       }).then((response) => {
-        this[watched].authenticated = true
         let userData = utils.getValue(response, `${this.options.httpDataField}`)
         userData = this.parseUserData(userData)
         this[watched].data = userData
         resolve(userData)
       }).catch((error) => {
-        this[watched].authenticated = false
+        // empty it for the time being
+        this[watched].data = {}
         reject(error)
       }).then(() => {
-        this[watched].loaded = true
+        this[watched].fetching = false
       })
     })
   }
@@ -204,16 +250,123 @@ export default class Auth {
     return data
   }
 
-  beforeEachRouteHandler (to, from, next) {
-    // let go all for the time being
-    next()
+  logout () {
+    this[tokenStore].remove()
+    this[watched].authenticated = false
+    this[watched].data = {}
+
+    if (this.options.logoutData.makeRequest) {
+      // no matter ajax or not
+      this[http]({
+        method: this.options.logoutData.method,
+        url: this.options.logoutData.url
+      }).then((response) => {
+        console.debug('logout successfully')
+      }).catch((error) => {
+        console.error('logout failed', error)
+      })
+    }
+
+    if (this.options.loginData.redirectt) {
+      this[router].push(this.options.loginData.redirect)
+    }
   }
 
-  httpRequestInterceptor (config) {
-
+  initBeforeEachRouteHandler () {
+    // get router auth config
+    // current route necessary to check then get user data otherwise just next
+    // we get userData
+    // compare auth settings
+    this[router].beforeEach((to, from, next) => {
+      let auth
+      if (to.to) {
+        auth = to.to.auth
+      } else {
+        let authRoutes = to.matched.filter(function (route) {
+          return route.meta.hasOwnProperty('auth')
+        })
+        // matches the nested route, the last one in the list
+        if (authRoutes.length) {
+          auth = authRoutes[authRoutes.length - 1].meta.auth
+        }
+      }
+      if (!auth) {
+        next()
+        return
+      }
+      // token is null and authenticated = true means expiration
+      // token is not null and authenticated = true means 403
+      // token is null and authenticated = false means login failure or hard logout
+      // token is not null and authencation = false means logout soft
+      if (this[watched].authenticated) {
+        if (auth === true) {
+          next()
+        } else if (auth.constructor === Array) {
+          this.fetchUserInfo()
+            .then((userData) => {
+              if (this.checkAuth(auth, userData[this.options.rolesVar])) {
+                next()
+              } else {
+                next(this.options.forbiddenRedirect)
+              }
+            }).catch((error) => {
+              console.error('fetchUserInfo error in router.beforeEach', error)
+              next(this.options.notAuthRedirect)
+            })
+        }
+      } else {
+        next(this.options.authRedirect)
+      }
+      if (this[watched].authenticated && !this[tokenStore].get()) {
+        // we need to logout this invalid state
+        this.logout()
+      }
+    })
   }
 
-  httpResponseInterceptor (response) {
+  initRequestInterceptor () {
+    const self = this
+    this[http].interceptors.request.use((config) => {
+      if (!self[watched].authenticated) {
+        return Promise.resolve(config)
+      }
 
+      return new Promise((resolve, reject) => {
+        let refreshingLoop = () => {
+          setTimeout(() => {
+            if (self[watched].refreshing) {
+              refreshingLoop()
+            } else {
+              let token = self[tokenStore].get()
+              config.headers.common = Object.assign(config.headers.common, {Authorization: `${self.options.authType} ${token}`})
+              resolve(config)
+            }
+          }, 500)
+        }
+        refreshingLoop()
+      })
+    }, (error) => {
+      return Promise.reject(error)
+    })
+  }
+
+  initResponseInterceptor () {
+    const self = this
+    this[http].interceptors.response.use((response) => {
+      let headers = response.headers
+      let token = headers.Authorization || headers.authorization
+
+      if (token) {
+        let pattern = new RegExp(`${self.options.authType}\\:?\\s?`, 'i')
+        token = token.split(pattern)
+        token = token[token.length > 1 ? 1 : 0].trim()
+        self[tokenStore].set(token)
+      }
+      return Promise.resolve(response)
+    }, (error) => {
+      // Generally speaking, no redirect for these ajax errors
+      // for redirect to login page, please do it in ajax error handler individually
+      return Promise.reject(error)
+    })
   }
 }

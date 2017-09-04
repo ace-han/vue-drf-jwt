@@ -305,5 +305,5 @@ JWT_AUTH = {
     # and JWT_REFRESH_EXPIRATION_DELTA should be 1 week
     'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7), #Limit on token refresh, is a datetime.timedelta instance. 
                                                     # This is how much time after the original token that future tokens can be refreshed from.
-    'JWT_AUTH_HEADER_PREFIX': 'Bear', # that HTTP Header Authorization: Bearer xxx, Bearer part
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer', # that HTTP Header Authorization: Bearer xxx, Bearer part
 }

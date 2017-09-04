@@ -5,6 +5,21 @@ function isObject (val) {
   return false
 }
 
+function isEmptyObject (obj) {
+  // because Object.keys(new Date()).length === 0;
+  // we have to do some additional check
+  // isEmptyObject(""), // false
+  // isEmptyObject(33), // false
+  // isEmptyObject([]), // false
+  // isEmptyObject({}), // true
+  // isEmptyObject({length: 0, custom_property: []}), // false
+  if (obj == null) {
+    // null and undefined are "empty"
+    return true
+  }
+  return Object.keys(obj).length === 0 && obj.constructor === Object
+}
+
 function extend (target, src) {
   let data = {}
   let ii = src.length
@@ -39,8 +54,14 @@ function getValue (obj, attrStr) {
   return result
 }
 
+function toArray (val) {
+  return (typeof val) === 'string' || (typeof val) === 'number' ? [val] : val
+}
+
 export default {
   isObject,
+  isEmptyObject,
   extend,
-  getValue
+  getValue,
+  toArray
 }
