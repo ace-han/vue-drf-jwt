@@ -5,6 +5,9 @@ import Profile from './Profile'
 export default {
   path: 'account',
   component: Blank,
+  meta: {
+    auth: true
+  },
   children: [{
     path: 'me',
     name: 'account.me',
@@ -16,7 +19,8 @@ export default {
     path: 'profile',
     name: 'account.profile',
     meta: {
-      name: 'Profile'
+      name: 'Profile',
+      auth: ['admin']
     },
     component: Profile
   }]

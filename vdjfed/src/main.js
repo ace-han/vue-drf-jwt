@@ -18,7 +18,7 @@ Vue.prototype.$http = axiosInstance
 Vue.use(AuthPlugin, {
   router: router,
   http: axiosInstance,
-  ...{}
+  rolesVar: 'groups'
 })
 
 /* eslint-disable no-new */

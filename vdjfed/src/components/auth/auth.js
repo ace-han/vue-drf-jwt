@@ -5,7 +5,7 @@ import TokenStore from './token'
 const defaultOptions = {
   // Variables
   authType: 'Bearer',
-  rolesVar: 'groups',
+  rolesVar: 'roles',
   tokenName: 'token',
   tokenStoreType: 'localStorage',
   httpDataField: 'data',
@@ -52,7 +52,7 @@ const watched = Symbol('watched')
 
 export default class Auth {
   constructor (Vue, vueRouter, vueHttp, options) {
-    this.options = utils.extend(defaultOptions, options || {})
+    this.options = utils.extend(defaultOptions, [options || {}])
     this[pollingRef] = null
     this[router] = vueRouter
     this[http] = vueHttp
@@ -69,18 +69,16 @@ export default class Auth {
         }
       }
     })
-
     this.initBeforeEachRouteHandler()
     this.initRequestInterceptor()
     this.initResponseInterceptor()
-
     this.refreshTokenQuietly()
   }
 
   static checkAuth (one, two) {
     if (Object.prototype.toString.call(one) === '[object Object]' && Object.prototype.toString.call(two) === '[object Object]') {
       for (let key in one) {
-        if (this.checkAuth(one[key], two[key])) {
+        if (this.constructor.checkAuth(one[key], two[key])) {
           return true
         }
       }
@@ -112,8 +110,9 @@ export default class Auth {
           this[watched].authenticated = true
           this.fetchUserInfo()
           this.refreshToken()
-        }).catch(() => {
+        }).catch((error) => {
           this[watched].authenticated = false
+          console.error(error)
         }).then(() => {
         })
     }
@@ -122,7 +121,7 @@ export default class Auth {
   refreshToken () {
     if (this.options.refreshData.enabled) {
       this[pollingRef] = setTimeout(() => {
-        this.doRreshToken()
+        this.doRefreshToken()
         this.refreshToken()
       }, this.options.refreshData.interval * 60 * 1000)
     } else {
@@ -267,7 +266,7 @@ export default class Auth {
       })
     }
 
-    if (this.options.loginData.redirectt) {
+    if (this.options.loginData.redirect) {
       this[router].push(this.options.loginData.redirect)
     }
   }
@@ -278,18 +277,18 @@ export default class Auth {
     // we get userData
     // compare auth settings
     this[router].beforeEach((to, from, next) => {
-      let auth
-      if (to.to) {
-        auth = to.to.auth
-      } else {
-        let authRoutes = to.matched.filter(function (route) {
-          return route.meta.hasOwnProperty('auth')
-        })
-        // matches the nested route, the last one in the list
-        if (authRoutes.length) {
-          auth = authRoutes[authRoutes.length - 1].meta.auth
+      let auth = false
+       // as detailed in https://router.vuejs.org/en/api/route-object.html, the last one is the exactRoute
+      // When the URL is /foo/bar, $route.matched will be an Array containing both objects (cloned),
+      // in parent to child order.
+      // typeof only usage to see if a variable is undefined
+      // please refer to http://bonsaiden.github.io/JavaScript-Garden/#types.typeof
+      to.matched.filter(function (route) {
+        if (route.meta && route.meta.hasOwnProperty('auth')) {
+          auth = route.meta.auth
         }
-      }
+      })
+
       if (!auth) {
         next()
         return
@@ -298,16 +297,25 @@ export default class Auth {
       // token is not null and authenticated = true means 403
       // token is null and authenticated = false means login failure or hard logout
       // token is not null and authencation = false means logout soft
-      if (this[watched].authenticated) {
+
+      // for the first time the page is loaded,
+      // probably `authenticated` not yet loaded
+      // token in tokenStore is much more reliable to demo the user was login some time ago
+      if (this[watched].authenticated || this[tokenStore].get()) {
         if (auth === true) {
           next()
         } else if (auth.constructor === Array) {
           this.fetchUserInfo()
             .then((userData) => {
-              if (this.checkAuth(auth, userData[this.options.rolesVar])) {
+              if (this.constructor.checkAuth(auth, userData[this.options.rolesVar])) {
                 next()
               } else {
-                next(this.options.forbiddenRedirect)
+                next({
+                  path: this.options.forbiddenRedirect.path,
+                  query: {
+                    refer: to.fullPath
+                  }
+                })
               }
             }).catch((error) => {
               console.error('fetchUserInfo error in router.beforeEach', error)
@@ -315,7 +323,12 @@ export default class Auth {
             })
         }
       } else {
-        next(this.options.authRedirect)
+        next({
+          path: this.options.authRedirect.path,
+          query: {
+            next: to.fullPath
+          }
+        })
       }
       if (this[watched].authenticated && !this[tokenStore].get()) {
         // we need to logout this invalid state
@@ -325,20 +338,19 @@ export default class Auth {
   }
 
   initRequestInterceptor () {
-    const self = this
     this[http].interceptors.request.use((config) => {
-      if (!self[watched].authenticated) {
+      if (!this[tokenStore].get() || config.url === this.options.refreshData.url) {
         return Promise.resolve(config)
       }
 
       return new Promise((resolve, reject) => {
         let refreshingLoop = () => {
           setTimeout(() => {
-            if (self[watched].refreshing) {
+            if (this[watched].refreshing) {
               refreshingLoop()
             } else {
-              let token = self[tokenStore].get()
-              config.headers.common = Object.assign(config.headers.common, {Authorization: `${self.options.authType} ${token}`})
+              let token = this[tokenStore].get()
+              config.headers.common = Object.assign(config.headers.common, {Authorization: `${this.options.authType} ${token}`})
               resolve(config)
             }
           }, 500)
@@ -351,16 +363,15 @@ export default class Auth {
   }
 
   initResponseInterceptor () {
-    const self = this
     this[http].interceptors.response.use((response) => {
       let headers = response.headers
       let token = headers.Authorization || headers.authorization
 
       if (token) {
-        let pattern = new RegExp(`${self.options.authType}\\:?\\s?`, 'i')
+        let pattern = new RegExp(`${this.options.authType}\\:?\\s?`, 'i')
         token = token.split(pattern)
         token = token[token.length > 1 ? 1 : 0].trim()
-        self[tokenStore].set(token)
+        this[tokenStore].set(token)
       }
       return Promise.resolve(response)
     }, (error) => {
