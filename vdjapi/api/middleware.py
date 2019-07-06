@@ -1,5 +1,6 @@
-from django.core.urlresolvers import resolve
+from django.urls.base import resolve
 from django.utils.deprecation import MiddlewareMixin
+
 
 # plz refer to 
 # http://stackoverflow.com/questions/14269719/django-rest-framework-v1-versioning#answer-21839842

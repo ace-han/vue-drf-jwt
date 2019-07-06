@@ -1,6 +1,6 @@
-from django.conf.urls import url, include
+from django.urls import path, include
 from .auth import urls as auth_urls
 
 urlpatterns = [
-    url(r'^auth/', include(auth_urls, namespace='auth')),
+    path('auth', include((auth_urls, 'auth'), namespace='auth')),
 ]

@@ -27,12 +27,15 @@ SECRET_KEY = '5)cu*r74+(f40qyqaq44o)neocao9%euf_o66^uw*w$(ks5u#4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '.tinaam.com',
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -252,15 +255,15 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-        'authx.authentication.JSONWebTokenAuthenticationQS',    # almost for debug only
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        #'authx.authentication.JSONWebTokenAuthenticationQS',    # almost for debug only
     ),
     # this should align the same as django GenericListView paginate_by, page_size mechanism
     'DEFAULT_FILTER_BACKENDS': (
                                 #'url_filter.integrations.drf.DjangoFilterBackend',
                                 #'rest_framework.filters.DjangoFilterBackend',
                                 #'django_filters.rest_framework.DjangoFilterBackend',
-                                'rest_framework_filters.backends.DjangoFilterBackend',
+                                'rest_framework_filters.backends.RestFrameworkFilterBackend',
                                 'rest_framework.filters.SearchFilter',
                                 #'rest_framework.filters.OrderingFilter', 
                                 'common.filters.RelatedOrderingFilter'), 
@@ -289,7 +292,7 @@ JWT_AUTH = {
                         # For example, if you have a JWT payload with an expiration time set to 30 seconds after creation 
                         # but you know that sometimes you will process it after 30 seconds, 
                         # you can set a leeway of 10 seconds in order to have some margin
-    'JWT_AUDIENCE': None,   # This is a string that will be checked against the aud field of the token, if present. Default is None(fail if aud present on JWT).
+    'JWT_AUDIENCE': None,   # (Who will receive this jwt)This is a string that will be checked against the aud field of the token, if present. Default is None(fail if aud present on JWT).
     'JWT_ISSUER': None,     # This is a string that will be checked against the iss field of the token. Default is None(do not check iss on JWT).
     
     'JWT_ALLOW_REFRESH': True,     # Enable token refresh functionality. Token issued from rest_framework_jwt.views.obtain_jwt_token will have an orig_iat field.
