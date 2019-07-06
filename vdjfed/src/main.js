@@ -1,31 +1,41 @@
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
-import axios from 'axios'
-import App from './App'
-import router from './router'
-import i18n from './locales'
-import AuthPlugin from '@/components/auth'
 
-let axiosInstance = axios.create({
-  timeout: 2 * 60 * 1000 // milliseconds
-})
+import 'normalize.css/normalize.css' // A modern alternative to CSS resets
+
+import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css'
+import locale from 'element-ui/lib/locale/lang/en' // lang i18n
+
+import '@/styles/index.scss' // global css
+
+import App from './App'
+import store from './store'
+import router from './router'
+
+import '@/icons' // icon
+import '@/permission' // permission control
+
+/**
+ * If you don't want to use mock-server
+ * you want to use MockJs for mock api
+ * you can execute: mockXHR()
+ *
+ * Currently MockJs will be used in the production environment,
+ * please remove it before going online! ! !
+ */
+import { mockXHR } from '../mock'
+if (process.env.NODE_ENV === 'production') {
+  mockXHR()
+}
+
+// set ElementUI lang to EN
+Vue.use(ElementUI, { locale })
 
 Vue.config.productionTip = false
 
-Vue.prototype.$http = axiosInstance
-// use default options will be fine
-Vue.use(AuthPlugin, {
-  router: router,
-  http: axiosInstance,
-  rolesVar: 'groups'
-})
-
-/* eslint-disable no-new */
 new Vue({
   el: '#app',
   router,
-  i18n,
-  template: '<App/>',
-  components: { App }
+  store,
+  render: h => h(App)
 })
