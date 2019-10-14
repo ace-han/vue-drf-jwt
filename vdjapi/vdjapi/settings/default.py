@@ -43,8 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'pytz',
     'rest_framework',
-    'common',
-    'authx',
+
+#     'oauth2_provider',
+    'social_django',
+#     'rest_framework_social_oauth2',
+    
+#     'common',
     'api',
 ]
 
@@ -56,6 +60,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # social_django
+    'social_django.middleware.SocialAuthExceptionMiddleware',
+    
     'api.middleware.VersionSwitch',
 ]
 
@@ -64,7 +71,9 @@ ROOT_URLCONF = 'vdjapi.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -72,6 +81,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -86,13 +98,13 @@ WSGI_APPLICATION = 'vdjapi.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'vdjapi',                      # Or path to database file if using sqlite3.
-        'USER': 'vdjapi',                      # Not used with sqlite3.
-        'PASSWORD': 'vdjapi',                  # Not used with sqlite3.
+        'NAME': 'vdj',                      # Or path to database file if using sqlite3.
+        'USER': 'vdj',                      # Not used with sqlite3.
+        'PASSWORD': 'vdj',                  # Not used with sqlite3.
         'HOST': 'localhost',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '3306',
         'OPTIONS': {
-            'init_command': 'SET foreign_key_checks = 0;',
+            # 'init_command': 'SET foreign_key_checks = 0;',
          },
     }
 }
@@ -247,6 +259,27 @@ def update_log_level(logger, level):
             else:
                 update_log_level(logger[key], level)
 
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
+LOGIN_REDIRECT_URL = 'home' # should be the view name...
+
+AUTHENTICATION_BACKENDS = (
+    # Others auth providers (e.g. Google, OpenId, etc)
+    # ...
+    # weibo
+    'social_core.backends.weibo.WeiboOAuth2',
+    # github OAuth2
+    'social_core.backends.github.GithubOAuth2',
+    
+    # Facebook OAuth2
+    'social_core.backends.facebook.FacebookAppOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
+    # django-rest-framework-social-oauth2
+#     'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    # Django
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
@@ -257,6 +290,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         #'authx.authentication.JSONWebTokenAuthenticationQS',    # almost for debug only
+        
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
+        'rest_framework_social_oauth2.authentication.SocialAuthentication',
     ),
     # this should align the same as django GenericListView paginate_by, page_size mechanism
     'DEFAULT_FILTER_BACKENDS': (
@@ -267,46 +303,39 @@ REST_FRAMEWORK = {
                                 'rest_framework.filters.SearchFilter',
                                 #'rest_framework.filters.OrderingFilter', 
                                 'common.filters.RelatedOrderingFilter'), 
-    'SEARCH_PARAM': 'q',
+    'SEARCH_PARAM': 'search',
     'ORDERING_PARAM': 'ordering', 
     'DEFAULT_PAGINATION_CLASS': 'common.pagination.StandardResultsSetPagination',
     'PAGE_SIZE': 20,
     #'PAGE_QUERY_PARAM': 'page', # sadly no this config, 'page' already is the default query param for this PageNumberPagination
     #'PAGINATE_BY_PARAM': 'page_size', # this is also in REMOVED_SETTINGS
 }
-QS_JWT_KEY = 'jwt' # for authx.authentication to parse query_params if any jwt
 
-AUTH_USER_MODEL = 'authx.User'
+# social_django
+# SOCIAL_AUTH_URL_NAMESPACE = 'oauth:social'
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
-JWT_AUTH = {
-    #'JWT_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_payload_handler',
-    #'JWT_PAYLOAD_HANDLER': 'authx.utils.jwt_payload_handler', # we should make the payload count
-    #'JWT_RESPONSE_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_response_payload_handler'
-    #'JWT_RESPONSE_PAYLOAD_HANDLER': 'authx.utils.jwt_response_payload_handler',
-    
-    # default stuff with comments no more doc looking up
-    'JWT_VERIFY': True,
-    'JWT_VERIFY_EXPIRATION': True,
-    'JWT_LEEWAY': 60,    # in seconds
-                        # This allows you to validate an expiration time which is in the past but no very far. 
-                        # For example, if you have a JWT payload with an expiration time set to 30 seconds after creation 
-                        # but you know that sometimes you will process it after 30 seconds, 
-                        # you can set a leeway of 10 seconds in order to have some margin
-    'JWT_AUDIENCE': None,   # (Who will receive this jwt)This is a string that will be checked against the aud field of the token, if present. Default is None(fail if aud present on JWT).
-    'JWT_ISSUER': None,     # This is a string that will be checked against the iss field of the token. Default is None(do not check iss on JWT).
-    
-    'JWT_ALLOW_REFRESH': True,     # Enable token refresh functionality. Token issued from rest_framework_jwt.views.obtain_jwt_token will have an orig_iat field.
-    # for usage clarification of the following two options 
-    # plz refer to https://github.com/GetBlimp/django-rest-framework-jwt/issues/92#issuecomment-227763338
-    # in this situation, once the user is forced to log off, you will have to login again with username/password
-    # if you want the user stay logon for a really long time(which is not good), you might as well set the JWT_EXPIRATION_DELTA long enough, but JWT_EXPIRATION_DELTA<JWT_REFRESH_EXPIRATION_DELTA for sure
-    # for a much more friendly user experience in front end, I set it to one day
-    # however, for a real api backend I still need another endpoint to make it seconds=300  
-    'JWT_EXPIRATION_DELTA': timedelta(days=1), # used to be seconds=300, original should be no longer than JWT_REFRESH_EXPIRATION_DELTA
-    # as recommended @http://stackoverflow.com/questions/26739167/jwt-json-web-token-automatic-prolongation-of-expiration?rq=1
-    # a generic JWT_EXPIRATION_DELTA would be 1 hour, renew should go with every time user open the page and one hour with a setTimeout(maybe?)
-    # and JWT_REFRESH_EXPIRATION_DELTA should be 1 week
-    'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7), #Limit on token refresh, is a datetime.timedelta instance. 
-                                                    # This is how much time after the original token that future tokens can be refreshed from.
-    'JWT_AUTH_HEADER_PREFIX': 'Bearer', # that HTTP Header Authorization: Bearer xxx, Bearer part
-}
+DRFSO2_URL_NAMESPACE = 'oauth'
+# social_core.backends.???.py#name
+DRFSO2_PROPRIETARY_BACKEND_NAME = 'github'
+
+# https://github.com/settings/applications/1147505
+# Authorization callback URL: http://localhost:8090/oauth/complete/github/
+SOCIAL_AUTH_GITHUB_KEY = '45ff643c2a34d8f94317'
+SOCIAL_AUTH_GITHUB_SECRET = 'af9b8668c8b29938fc85c2e1348b34628f931ae5'
+
+# https://developers.facebook.com/apps/533487607224560/settings/basic/
+# Site URL: http://localhost:8090/
+SOCIAL_AUTH_FACEBOOK_KEY = '533487607224560'  # App ID
+SOCIAL_AUTH_FACEBOOK_SECRET = '413d826510263b463b5f927edbed7892'  # App Secret
+
+# https://cloud.tencent.com/developer/article/1350996
+# https://open.weibo.com/apps/3393736317/info/advanced
+# 授权回调页：http://127.0.01:8090/oauth/complete/weibo/
+SOCIAL_AUTH_WEIBO_KEY = '3393736317'
+SOCIAL_AUTH_WEIBO_SECRET = 'e0314b2d1fcdf11e43401d3920d8c39c'
+
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/settings'
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/settings'
+SOCIAL_AUTH_RAISE_EXCEPTIONS = False
+

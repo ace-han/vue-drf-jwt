@@ -7,8 +7,9 @@
 # setup the db
 mysql -u root
 
-CREATE DATABASE `vdjapi` CHARACTER SET utf8 COLLATE utf8_general_ci;
-GRANT ALL ON `vdjapi`.* TO `vdjapi`@`localhost` IDENTIFIED BY 'vdjapi';
+CREATE DATABASE `vdj` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE USER `vdj`@`localhost` IDENTIFIED BY 'vdj';
+GRANT ALL ON `vdj`.* TO `vdj`@`localhost`;
 FLUSH PRIVILEGES;
 
 # install python libs

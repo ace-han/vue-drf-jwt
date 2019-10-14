@@ -12,11 +12,14 @@
 /vdjapi/.pydevproject
 /vdjapi/.settings
 
-/vdjapi/manage.dev.py
+/vdjapi/dev_manage.py
 /vdjapi/vdjapi/settings/prod.py
 /vdjapi/vdjapi/settings/dev.py
+/vdjapi/Pipfile.lock
 /vdjapi-logs
 
 ### VS Code ###
 /vdjfed/.vscode
 /vdjfed/package-lock.json
+
+
