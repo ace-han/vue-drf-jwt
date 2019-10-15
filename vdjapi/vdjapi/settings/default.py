@@ -266,6 +266,8 @@ LOGIN_REDIRECT_URL = 'home' # should be the view name...
 AUTHENTICATION_BACKENDS = (
     # Others auth providers (e.g. Google, OpenId, etc)
     # ...
+    # google
+    'social_core.backends.google.GoogleOAuth2',
     # weibo
     'social_core.backends.weibo.WeiboOAuth2',
     # github OAuth2
@@ -334,6 +336,9 @@ SOCIAL_AUTH_FACEBOOK_SECRET = '413d826510263b463b5f927edbed7892'  # App Secret
 # 授权回调页：http://127.0.01:8090/oauth/complete/weibo/
 SOCIAL_AUTH_WEIBO_KEY = '3393736317'
 SOCIAL_AUTH_WEIBO_SECRET = 'e0314b2d1fcdf11e43401d3920d8c39c'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '401861438700-cnct2ak8867s5vmb97787gke8obmtqkf.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '0-FXArpYIK80ClkXT8MGI1BI'
 
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/settings'
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/settings'

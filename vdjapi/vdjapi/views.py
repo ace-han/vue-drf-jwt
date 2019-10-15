@@ -45,6 +45,11 @@ def settings(request):
 #     except UserSocialAuth.DoesNotExist:
 #         twitter_login = None
     try:
+        google_oauth2_login = user.social_auth.get(provider='google-oauth2')
+    except UserSocialAuth.DoesNotExist:
+        google_oauth2_login = None
+        
+    try:
         weibo_login = user.social_auth.get(provider='weibo')
     except UserSocialAuth.DoesNotExist:
         weibo_login = None
@@ -59,6 +64,7 @@ def settings(request):
         'github_login': github_login,
 #         'twitter_login': twitter_login,
         'weibo_login': weibo_login,
+        'google_oauth2_login': google_oauth2_login,
         'facebook_login': facebook_login,
         'can_disconnect': can_disconnect
     })
