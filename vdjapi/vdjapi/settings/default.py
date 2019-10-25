@@ -337,6 +337,8 @@ SOCIAL_AUTH_FACEBOOK_SECRET = '413d826510263b463b5f927edbed7892'  # App Secret
 SOCIAL_AUTH_WEIBO_KEY = '3393736317'
 SOCIAL_AUTH_WEIBO_SECRET = 'e0314b2d1fcdf11e43401d3920d8c39c'
 
+# https://console.developers.google.com/apis/credentials/oauthclient/401861438700-k08l1hfmncj2k29ggqhf30fdpv0ejj46.apps.googleusercontent.com?project=vdjdev&supportedpurview=project
+# Authorized redirect URIs:     http://localhost:8090/oauth/complete/google-oauth2/
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '401861438700-cnct2ak8867s5vmb97787gke8obmtqkf.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '0-FXArpYIK80ClkXT8MGI1BI'
 
