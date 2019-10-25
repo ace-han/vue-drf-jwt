@@ -28,8 +28,8 @@ urlpatterns = [
     path('settings', settings, name='settings'),
     path('settings/password', password, name='password'),
     path('api/', include((api_urls, 'api'), namespace='api')),
-#     path('oauth/', include(('rest_framework_social_oauth2.urls', 'oauth'), namespace='oauth')),
-    path('oauth/', include(('social_django.urls', 'social'), namespace='social')),
+    path('oauth/', include(('rest_framework_social_oauth2.urls', 'oauth'), namespace='oauth')),
+#     path('oauth/', include(('social_django.urls', 'social'), namespace='social')),
     path('admin', admin.site.urls),
     
 ]

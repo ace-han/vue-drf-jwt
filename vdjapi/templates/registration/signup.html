@@ -9,8 +9,8 @@
   </form>
   <br>
   <p><strong>-- OR --</strong></p>
-  <a href="{% url 'social:begin' 'github' %}">Signup with GitHub</a><br>
-  <a href="{% url 'social:begin' 'weibo' %}">Signup with Weibo</a><br>
-  <a href="{% url 'social:begin' 'google-oauth2' %}">Login with Google OAuth2</a><br>
-  <a href="{% url 'social:begin' 'facebook' %}">Signup with Facebook</a>
+  <a href="{% url 'oauth:social:begin' 'github' %}">Signup with GitHub</a><br>
+  <a href="{% url 'oauth:social:begin' 'weibo' %}">Signup with Weibo</a><br>
+  <a href="{% url 'oauth:social:begin' 'google-oauth2' %}">Login with Google OAuth2</a><br>
+  <a href="{% url 'oauth:social:begin' 'facebook' %}">Signup with Facebook</a>
 {% endblock %}

@@ -7,7 +7,7 @@
   {% if github_login %}
     <p>Connected as <a href="https://github.com/{{ github_login.extra_data.login }}/" target="_blank">{{ github_login.extra_data.login }}</a></p>
     {% if can_disconnect %}
-      <form method="post" action="{% url 'social:disconnect' 'github' %}">
+      <form method="post" action="{% url 'oauth:social:disconnect' 'github' %}">
         {% csrf_token %}
         <button type="submit">Disconnect from GitHub</button>
       </form>
@@ -16,14 +16,14 @@
       <p style="color: red">You must <a href="{% url 'password' %}">define a password</a> for your account before disconnecting from Github.</p>
     {% endif %}
   {% else %}
-    <a href="{% url 'social:begin' 'github' %}">Connect to GitHub</a>
+    <a href="{% url 'oauth:social:begin' 'github' %}">Connect to GitHub</a>
   {% endif %}
 
   <h3>Google OAuth2</h3>
   {% if google_oauth2_login %}
     <p>Connected as <a href="https://myaccount.google.com" target="_blank">{{ google_oauth2_login.uid }}</a></p>
     {% if can_disconnect %}
-      <form method="post" action="{% url 'social:disconnect' 'google-oauth2' %}">
+      <form method="post" action="{% url 'oauth:social:disconnect' 'google-oauth2' %}">
         {% csrf_token %}
         <button type="submit">Disconnect from Google OAuth2</button>
       </form>
@@ -32,14 +32,14 @@
       <p style="color: red">You must <a href="{% url 'password' %}">define a password</a> for your account before disconnecting from Weibo.</p>
     {% endif %}
   {% else %}
-    <a href="{% url 'social:begin' 'google-oauth2' %}">Connect to Google OAuth2</a>
+    <a href="{% url 'oauth:social:begin' 'google-oauth2' %}">Connect to Google OAuth2</a>
   {% endif %}
 
   <h3>Weibo</h3>
   {% if weibo_login %}
     <p>Connected as <a href="https://weibo.com/{{ weibo_login.extra_data.id }}/" target="_blank">{{ weibo_login.extra_data.id }}</a></p>
     {% if can_disconnect %}
-      <form method="post" action="{% url 'social:disconnect' 'weibo' %}">
+      <form method="post" action="{% url 'oauth:social:disconnect' 'weibo' %}">
         {% csrf_token %}
         <button type="submit">Disconnect from Weibo</button>
       </form>
@@ -48,14 +48,14 @@
       <p style="color: red">You must <a href="{% url 'password' %}">define a password</a> for your account before disconnecting from Weibo.</p>
     {% endif %}
   {% else %}
-    <a href="{% url 'social:begin' 'weibo' %}">Connect to Weibo</a>
+    <a href="{% url 'oauth:social:begin' 'weibo' %}">Connect to Weibo</a>
   {% endif %}
 
   <h3>Facebook</h3>
   {% if facebook_login %}
     <p>Connected as <a href="https://facebook.com/{{ facebook_login.extra_data.id }}/" target="_blank">{{ facebook_login.extra_data.id }}</a></p>
     {% if can_disconnect %}
-      <form method="post" action="{% url 'social:disconnect' 'facebook' %}">
+      <form method="post" action="{% url 'oauth:social:disconnect' 'facebook' %}">
         {% csrf_token %}
         <button type="submit">Disconnect from Facebook</button>
       </form>
@@ -64,7 +64,7 @@
       <p style="color: red">You must <a href="{% url 'password' %}">define a password</a> for your account before disconnecting from Facebook.</p>
     {% endif %}
   {% else %}
-    <a href="{% url 'social:begin' 'facebook' %}">Connect to Facebook</a>
+    <a href="{% url 'oauth:social:begin' 'facebook' %}">Connect to Facebook</a>
   {% endif %}
 
 

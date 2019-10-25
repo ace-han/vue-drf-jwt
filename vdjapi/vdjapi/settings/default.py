@@ -44,9 +44,9 @@ INSTALLED_APPS = [
     'pytz',
     'rest_framework',
 
-#     'oauth2_provider',
+    'oauth2_provider',
     'social_django',
-#     'rest_framework_social_oauth2',
+    'rest_framework_social_oauth2',
     
 #     'common',
     'api',
@@ -277,7 +277,7 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.facebook.FacebookAppOAuth2',
     'social_core.backends.facebook.FacebookOAuth2',
     # django-rest-framework-social-oauth2
-#     'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    'rest_framework_social_oauth2.backends.DjangoOAuth2',
     # Django
     'django.contrib.auth.backends.ModelBackend',
 )
@@ -314,8 +314,8 @@ REST_FRAMEWORK = {
 }
 
 # social_django
-# SOCIAL_AUTH_URL_NAMESPACE = 'oauth:social'
-SOCIAL_AUTH_URL_NAMESPACE = 'social'
+SOCIAL_AUTH_URL_NAMESPACE = 'oauth:social'
+# SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
 DRFSO2_URL_NAMESPACE = 'oauth'
 # social_core.backends.???.py#name
@@ -330,6 +330,10 @@ SOCIAL_AUTH_GITHUB_SECRET = 'af9b8668c8b29938fc85c2e1348b34628f931ae5'
 # Site URL: http://localhost:8090/
 SOCIAL_AUTH_FACEBOOK_KEY = '533487607224560'  # App ID
 SOCIAL_AUTH_FACEBOOK_SECRET = '413d826510263b463b5f927edbed7892'  # App Secret
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+}
 
 # https://cloud.tencent.com/developer/article/1350996
 # https://open.weibo.com/apps/3393736317/info/advanced
@@ -342,7 +346,17 @@ SOCIAL_AUTH_WEIBO_SECRET = 'e0314b2d1fcdf11e43401d3920d8c39c'
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '401861438700-cnct2ak8867s5vmb97787gke8obmtqkf.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '0-FXArpYIK80ClkXT8MGI1BI'
 
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+]
+
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/settings'
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/settings'
 SOCIAL_AUTH_RAISE_EXCEPTIONS = False
 
+# django-oauth-toolkit
+OAUTH2_PROVIDER = {
+    # parses OAuth2 data from application/json requests 
+    'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore',
+}        
