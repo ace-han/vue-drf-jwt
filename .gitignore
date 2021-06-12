@@ -15,7 +15,6 @@
 /vdjapi/dev_manage.py
 /vdjapi/vdjapi/settings/prod.py
 /vdjapi/vdjapi/settings/dev.py
-/vdjapi/Pipfile.lock
 /vdjapi-logs
 
 ### VS Code ###
