@@ -29,10 +29,26 @@
       </form>
     {% else %}
       <button type="button" disabled>Disconnect from Google OAuth2</button>
-      <p style="color: red">You must <a href="{% url 'password' %}">define a password</a> for your account before disconnecting from Weibo.</p>
+      <p style="color: red">You must <a href="{% url 'password' %}">define a password</a> for your account before disconnecting from Google OAuth2.</p>
     {% endif %}
   {% else %}
     <a href="{% url 'oauth:social:begin' 'google-oauth2' %}">Connect to Google OAuth2</a>
+  {% endif %}
+
+  <h3>Google OIDC</h3>
+  {% if google_openidconnect_login %}
+    <p>Connected as <a href="https://myaccount.google.com" target="_blank">{{ google_openidconnect_login.uid }}</a></p>
+    {% if can_disconnect %}
+      <form method="post" action="{% url 'oauth:social:disconnect' 'google-openidconnect' %}">
+        {% csrf_token %}
+        <button type="submit">Disconnect from Google OIDC</button>
+      </form>
+    {% else %}
+      <button type="button" disabled>Disconnect from Google OIDC</button>
+      <p style="color: red">You must <a href="{% url 'password' %}">define a password</a> for your account before disconnecting from Google OIDC.</p>
+    {% endif %}
+  {% else %}
+    <a href="{% url 'oauth:social:begin' 'google-openidconnect' %}">Connect to Google OIDC</a>
   {% endif %}
 
   <h3>Weibo</h3>

@@ -268,6 +268,7 @@ AUTHENTICATION_BACKENDS = (
     # ...
     # google
     'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.google_openidconnect.GoogleOpenIdConnect',
     # weibo
     'social_core.backends.weibo.WeiboOAuth2',
     # github OAuth2
@@ -350,6 +351,9 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
+
+SOCIAL_AUTH_GOOGLE_OPENIDCONNECT_KEY = '401861438700-cnct2ak8867s5vmb97787gke8obmtqkf.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OPENIDCONNECT_SECRET = '0-FXArpYIK80ClkXT8MGI1BI'
 
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/settings'
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/settings'
