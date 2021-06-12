@@ -1,0 +1,6 @@
+{
+    "recommendations": [
+        "ms-python.python", // Python
+        "visualstudioexptteam.vscodeintellicode" // python ai assisted intellicode and python language server
+    ]
+}
